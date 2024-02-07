@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ChatController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper ul li { display: flex; align-items: center; gap: 20px;}
+</style>
+
+<div class="example-wrapper">
+    <h1>Liste des utilisateurs ✅</h1>
+
+
+    <ul>
+        {% for user in users %}
+            <li>
+                <p>{{ user.email }}</p>
+                <form action="{{ path('app_start_chat', {'id': user.id})}}">
+                    <button type="submit">Start Chat</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

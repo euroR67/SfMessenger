@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Chats{% endblock %}
+
+{% block body %}
+    <h1>My Chats</h1>
+
+    <ul>
+        {% for chat in chats %}
+            <li>
+                <a href="{{ path('app_chat_view', {'id': chat.id}) }}">
+                    Chat with 
+                    {% for user in chat.users %}
+                        {% if user.id != app.user.id %}
+                            {{ user.email }}
+                        {% endif %}
+                    {% endfor %}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

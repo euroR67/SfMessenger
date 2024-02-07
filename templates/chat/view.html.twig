@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chat{% endblock %}
+
+{% block body %}
+
+    <a href="{{ path('app_my_chats')}}">Back to my chats</a>
+
+    <p>Ajouter des amis</p>
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button type="submit">Invite user</button>
+    {{ form_end(form) }}
+
+    <h1>Chat</h1>
+
+    <ul id="message-list">
+        {% for message in chat.messages %}
+            <li>
+                <strong>{{ message.userMessage.email }}</strong>: {{ message.content }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form id="my-form" action="{{ path('app_send_message', {'id': chat.id}) }}" method="post" data-chat-id="{{ chat.id }}">
+        <input type="text" name="content" required>
+        <button type="submit">Send</button>
+    </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Envoyer le formulaire en utilisant AJAX
+        const form = document.querySelector('#my-form');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+    
+            const formData = new FormData(this);
+    
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Error: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log(data);
+    
+                
+            })
+            .catch(function(error) {
+                console.error(error);
+            });
+        });
+    
+        const pathParts = new URL(form.action).pathname.split('/');
+        const chatId = pathParts[pathParts.length - 2];
+        const url = new URL('https://localhost/.well-known/mercure');
+        url.searchParams.append('topic', 'http://localhost:8000/chat/' + chatId);
+    
+        const eventSource = new EventSource(url);
+        console.log(url);
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+    
+            const messageList = document.getElementById('message-list');
+            const newMessage = document.createElement('li');
+
+            const userEmail = document.createElement('strong');
+            userEmail.textContent = data.user;
+            newMessage.appendChild(userEmail);
+
+            newMessage.append(': ' + data.message);
+            messageList.appendChild(newMessage);
+        };
+    });
+    
+</script>
+
+{% endblock %}
