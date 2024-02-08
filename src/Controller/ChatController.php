@@ -72,39 +72,46 @@ class ChatController extends AbstractController
 
     // Voir un chat
     #[Route('/chat/{id}', name: 'app_chat_view')]
-    public function viewChat(Chat $chat, Request $request, EntityManagerInterface $entityManager): Response
+    public function viewChat(Chat $chat, Request $request, EntityManagerInterface $entityManager, Security $security): Response
     {
         // Récupérer les messages du chat
         $messages = $chat->getMessages();
+
+        // Récupérer l'utilisateur actuellement connecté
+        $user = $security->getUser();
+
+        // Récupérer les chats de l'utilisateur
+        $chats = $user->getChats();
     
         // Créer le formulaire d'invitation
-        $form = $this->createForm(AddUserType::class, null, ['chat' => $chat]);
+        // $form = $this->createForm(AddUserType::class, null, ['chat' => $chat]);
     
         // Gérer la soumission du formulaire
-        $form->handleRequest($request);
+        // $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Récupérer les utilisateurs à inviter
-            $usersToInvite = $form->get('users')->getData();
+        // if ($form->isSubmitted() && $form->isValid()) {
+        //     // Récupérer les utilisateurs à inviter
+        //     $usersToInvite = $form->get('users')->getData();
 
-            // Ajouter chaque utilisateur à inviter au chat
-            foreach ($usersToInvite as $userToInvite) {
-                $chat->addUser($userToInvite);
-            }
+        //     // Ajouter chaque utilisateur à inviter au chat
+        //     foreach ($usersToInvite as $userToInvite) {
+        //         $chat->addUser($userToInvite);
+        //     }
 
-            // Enregistrer les modifications dans la base de données
-            $entityManager->persist($chat);
-            $entityManager->flush();
+        //     // Enregistrer les modifications dans la base de données
+        //     $entityManager->persist($chat);
+        //     $entityManager->flush();
 
-            // Rediriger l'utilisateur vers la page du chat
-            return $this->redirectToRoute('app_chat_view', ['id' => $chat->getId()]);
-        }
+        //     // Rediriger l'utilisateur vers la page du chat
+        //     return $this->redirectToRoute('app_chat_view', ['id' => $chat->getId()]);
+        // }
     
         // Rendre la vue du chat
         return $this->render('chat/view.html.twig', [
             'chat' => $chat,
             'messages' => $messages,
-            'form' => $form->createView(),
+            'chats' => $chats,
+            // 'form' => $form->createView(),
         ]);
     }
 

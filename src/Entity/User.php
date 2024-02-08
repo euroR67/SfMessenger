@@ -50,6 +50,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->messages = new ArrayCollection();
     }
 
+    public function __toString(): string
+    {
+        return $this->username ?? $this->email;
+    }
+
     public function countUnreadMessages(): int
     {
         // Initialiser le compteur de messages non lus

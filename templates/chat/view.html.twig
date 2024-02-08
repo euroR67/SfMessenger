@@ -3,8 +3,50 @@
 {% block title %}Chat{% endblock %}
 
 {% block body %}
+    <h1>Chat with
+        {% for user in chat.users %}
+            {% if user.id != app.user.id %}
+                {{ user }}
+            {% endif %}
+        {% endfor %}
+    </h1>
 
-    <a href="{{ path('app_my_chats')}}">Back to my chats</a>
+    {# <a href="{{ path('app_my_chats')}}">Back to my chats</a> #}
+    <main class="chats">
+        <aside>
+            <ul>
+                {% for chat in chats %}
+                    <li class="notif2">
+                        <a href="{{ path('app_chat_view', {'id': chat.id}) }}">
+                            {% for user in chat.users %}
+                                {% if user.id != app.user.id %}
+                                    <img src="{{ asset('images/moi.jpg') }}">
+                                    {{ user }}
+                                {% endif %}
+                            {% endfor %}
+                        </a>
+                        {# <span>{{ chat.getUnreadMessagesCount(app.user) }}</span> #}
+                    </li>
+                {% endfor %}
+            </ul>
+        </aside>
+        <section>
+            <ul id="message-list">
+                {% for message in chat.messages %}
+                    <li class="notif2">
+                        <strong>{{ message.userMessage.username }}</strong>: {{ message.content }}
+                        {# {% if chat.users.contains(message.userMessage) %}
+                            <a href="{{ path('app_kick_user', {'id': chat.id, 'userId': message.userMessage.id}) }}">Kick user</a>
+                        {% endif %} #}
+                    </li>
+                {% endfor %}
+            </ul>
+            <form id="my-form" action="{{ path('app_send_message', {'id': chat.id}) }}" method="post" data-chat-id="{{ chat.id }}">
+                <input type="text" name="content" required>
+                <button type="submit">Send</button>
+            </form>
+        </section>
+    </main>
 
     {# <p>Ajouter des amis</p>
     {{ form_start(form) }}
@@ -12,24 +54,67 @@
     <button type="submit">Invite user</button>
     {{ form_end(form) }} #}
 
-    <h1>Chat</h1>
+<style>
+    main.chats {
+        height: 50vh;
+        display: flex;
+        width: 90%;
+    }
 
-    <ul id="message-list">
-        {% for message in chat.messages %}
-            <li>
-                <strong>{{ message.userMessage.username }}</strong>: {{ message.content }}
-                {# {% if chat.users.contains(message.userMessage) %}
-                    <a href="{{ path('app_kick_user', {'id': chat.id, 'userId': message.userMessage.id}) }}">Kick user</a>
-                {% endif %} #}
-            </li>
-        {% endfor %}
-    </ul>
+    main.chats section p {
+        text-align: center;
+        margin-top: 100px;
+        opacity: 0.5;
+    }
 
-    <form id="my-form" action="{{ path('app_send_message', {'id': chat.id}) }}" method="post" data-chat-id="{{ chat.id }}">
-        <input type="text" name="content" required>
-        <button type="submit">Send</button>
-    </form>
+    main.chats aside {
+        width: 300px;
+        border: 1px solid #cccccc49;
+        height: 100%;
+    }
 
+    main.chats aside ul li a {
+        border-bottom: 1px solid #cccccc49;
+        padding: 15px;
+        text-decoration: none;
+        width: 100%;
+    }
+
+    main.chats aside ul li a:hover {
+        background-color: #88888813;
+    }
+
+    main.chats section {
+        width: 700px;
+        border: 1px solid #cccccc49;
+        height: 100%;
+    }
+
+    .notif2 {
+        display: flex;
+        gap: 10px;
+    }
+
+    .notif2 img {
+        height: 50px;
+        width: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+
+    .notif2 span {
+        height: 20px;
+        width: 20px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+    }
+</style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Envoyer le formulaire en utilisant AJAX
