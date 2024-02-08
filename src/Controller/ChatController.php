@@ -23,6 +23,12 @@ class ChatController extends AbstractController
     #[Route('/chat', name: 'app_chat')]
     public function index(EntityManagerInterface $entityManager, Security $security): Response
     {
+        // Vérifier si un utilisateur est connecté
+        if (!$security->isGranted('IS_AUTHENTICATED_FULLY')) {
+            // Rediriger vers la page de connexion si aucun utilisateur n'est connecté
+            return $this->redirectToRoute('app_login');
+        }
+
         // Récupérer l'utilisateur actuellement connecté
         $currentUser = $security->getUser();
 
@@ -64,37 +70,6 @@ class ChatController extends AbstractController
         return $this->redirectToRoute('app_chat_view', ['id' => $chat->getId()]);
     }
 
-    // Envoyer un message dans un chat
-    #[Route('/chat/{id}/send', name: 'app_send_message', methods: ['POST'])]
-    public function sendMessage(Chat $chat, Request $request, EntityManagerInterface $entityManager, Security $security, PublisherInterface $publisher): Response
-    {
-        // Créer un nouveau message
-        $message = new Message();
-
-        // Définir le contenu du message à partir de la requête
-        $message->setContent($request->request->get('content'));
-
-        // Définir l'utilisateur du message comme l'utilisateur actuellement connecté
-        $message->setUserMessage($security->getUser());
-
-        // Définir le chat du message
-        $message->setChat($chat);
-
-        // Enregistrer le message dans la base de données
-        $entityManager->persist($message);
-        $entityManager->flush();
-
-        // Publier une mise à jour Mercure
-        $update = new Update(
-            'http://localhost:8000/chat/'.$chat->getId(),
-            json_encode(['message' => $message->getContent(), 'user' => $security->getUser()->getEmail()])
-        );
-        $publisher($update);
-
-        // Renvoyer une réponse JSON
-        return new JsonResponse(['status' => 'Message sent']);
-    }
-
     // Voir un chat
     #[Route('/chat/{id}', name: 'app_chat_view')]
     public function viewChat(Chat $chat, Request $request, EntityManagerInterface $entityManager): Response
@@ -133,6 +108,37 @@ class ChatController extends AbstractController
         ]);
     }
 
+    // Envoyer un message dans un chat
+    #[Route('/chat/{id}/send', name: 'app_send_message', methods: ['POST'])]
+    public function sendMessage(Chat $chat, Request $request, EntityManagerInterface $entityManager, Security $security, PublisherInterface $publisher): Response
+    {
+        // Créer un nouveau message
+        $message = new Message();
+
+        // Définir le contenu du message à partir de la requête
+        $message->setContent($request->request->get('content'));
+
+        // Définir l'utilisateur du message comme l'utilisateur actuellement connecté
+        $message->setUserMessage($security->getUser());
+
+        // Définir le chat du message
+        $message->setChat($chat);
+
+        // Enregistrer le message dans la base de données
+        $entityManager->persist($message);
+        $entityManager->flush();
+
+        // Publier une mise à jour Mercure
+        $update = new Update(
+            'http://localhost:8000/chat/'.$chat->getId(),
+            json_encode(['message' => $message->getContent(), 'user' => $security->getUser()->getUsername()])
+        );
+        $publisher($update);
+
+        // Renvoyer une réponse JSON
+        return new JsonResponse(['status' => 'Message sent']);
+    }
+
     // Lister les chats de l'utilisateur
     #[Route('/chats', name: 'app_my_chats')]
     public function myChats(Security $security): Response
@@ -147,5 +153,29 @@ class ChatController extends AbstractController
         return $this->render('chat/chats.html.twig', [
             'chats' => $chats,
         ]);
+    }
+
+    // Kick un utilisateur du chat
+    #[Route('/chat/{id}/kick/{userId}', name: 'app_kick_user')]
+    public function kickUser(Chat $chat, $userId, EntityManagerInterface $entityManager, Security $security): Response
+    {
+        // Récupérer l'utilisateur à partir de son identifiant
+        $user = $entityManager->getRepository(User::class)->find($userId);
+
+        // Vérifier si l'utilisateur à kick est bien un membre du chat
+        if (!$chat->getUsers()->contains($user)) {
+            // Si l'utilisateur à kick n'est pas un membre du chat, renvoyer une erreur 403
+            return new Response('This user is not a member of this chat', 403);
+        }
+
+        // Retirer l'utilisateur du chat
+        $chat->removeUser($user);
+
+        // Enregistrer les modifications dans la base de données
+        $entityManager->persist($chat);
+        $entityManager->flush();
+
+        // Rediriger l'utilisateur vers la page des chats
+        return $this->redirectToRoute('app_chat_view', ['id' => $chat->getId()]);
     }
 }

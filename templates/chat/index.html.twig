@@ -14,7 +14,7 @@
     <ul>
         {% for user in users %}
             <li>
-                <p>{{ user.email }}</p>
+                <p>{{ user.username }}</p>
                 <form action="{{ path('app_start_chat', {'id': user.id})}}">
                     <button type="submit">Start Chat</button>
                 </form>

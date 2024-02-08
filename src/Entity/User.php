@@ -2,13 +2,16 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\Chat;
+use App\Entity\Message;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\UserRepository;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -38,10 +41,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'userMessage', orphanRemoval: true)]
     private Collection $messages;
 
+    #[ORM\Column(length: 25, nullable: true)]
+    private ?string $username = null;
+
     public function __construct()
     {
         $this->chats = new ArrayCollection();
         $this->messages = new ArrayCollection();
+    }
+
+    public function countUnreadMessages(): int
+    {
+        // Initialiser le compteur de messages non lus
+        $unreadCount = 0;
+        
+        // Parcourir tous les chats auxquels l'utilisateur participe
+        foreach ($this->getChats() as $chat) {
+            // Créer un critère pour récupérer uniquement les messages non lus de ce chat
+            $criteria = Criteria::create()
+                ->andWhere(Criteria::expr()->eq('isRead', false));
+            
+            // Appliquer le critère pour obtenir la collection de messages non lus dans ce chat
+            $unreadMessages = $chat->getMessages()->matching($criteria);
+            
+            // Parcourir les messages non lus dans ce chat
+            foreach ($unreadMessages as $message) {
+                // Vérifier si le message n'est pas envoyé par l'utilisateur lui-même
+                if ($message->getUserMessage() !== $this) {
+                    // Si le message n'est pas envoyé par l'utilisateur lui-même, incrémenter le compteur global
+                    $unreadCount++;
+                }
+            }
+        }
+        
+        return $unreadCount;
     }
 
     public function getId(): ?int
@@ -164,6 +197,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $message->setUserMessage(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(?string $username): static
+    {
+        $this->username = $username;
 
         return $this;
     }

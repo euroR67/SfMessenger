@@ -36,6 +36,20 @@ class Chat
         $this->createdAt = new \DateTimeImmutable(null, new \DateTimeZone('Europe/Paris'));
     }
 
+    // public function getUnreadMessagesCount(User $user): int
+    // {
+    //     $unreadMessagesCount = 0;
+
+    //     foreach ($this->messages as $message) {
+    //         // On vérifie si le message n'a pas été lu et si l'utilisateur actuel n'est pas l'auteur du message
+    //         if (!$message->isIsRead() && $message->getUserMessage() !== $user) {
+    //             $unreadMessagesCount++;
+    //         }
+    //     }
+
+    //     return $unreadMessagesCount;
+    // }
+
     public function getId(): ?int
     {
         return $this->id;

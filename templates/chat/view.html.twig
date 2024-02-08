@@ -6,18 +6,21 @@
 
     <a href="{{ path('app_my_chats')}}">Back to my chats</a>
 
-    <p>Ajouter des amis</p>
+    {# <p>Ajouter des amis</p>
     {{ form_start(form) }}
     {{ form_widget(form) }}
     <button type="submit">Invite user</button>
-    {{ form_end(form) }}
+    {{ form_end(form) }} #}
 
     <h1>Chat</h1>
 
     <ul id="message-list">
         {% for message in chat.messages %}
             <li>
-                <strong>{{ message.userMessage.email }}</strong>: {{ message.content }}
+                <strong>{{ message.userMessage.username }}</strong>: {{ message.content }}
+                {# {% if chat.users.contains(message.userMessage) %}
+                    <a href="{{ path('app_kick_user', {'id': chat.id, 'userId': message.userMessage.id}) }}">Kick user</a>
+                {% endif %} #}
             </li>
         {% endfor %}
     </ul>
@@ -33,9 +36,9 @@
         const form = document.querySelector('#my-form');
         form.addEventListener('submit', function(event) {
             event.preventDefault();
-    
+
             const formData = new FormData(this);
-    
+
             fetch(this.action, {
                 method: 'POST',
                 body: formData,
@@ -48,8 +51,9 @@
             })
             .then(function(data) {
                 console.log(data);
-    
-                
+
+                // Vider le champ content
+                form.elements['content'].value = '';
             })
             .catch(function(error) {
                 console.error(error);
@@ -69,9 +73,9 @@
             const messageList = document.getElementById('message-list');
             const newMessage = document.createElement('li');
 
-            const userEmail = document.createElement('strong');
-            userEmail.textContent = data.user;
-            newMessage.appendChild(userEmail);
+            const userName = document.createElement('strong');
+            userName.textContent = data.user;
+            newMessage.appendChild(userName);
 
             newMessage.append(': ' + data.message);
             messageList.appendChild(newMessage);

@@ -22,13 +22,17 @@ class ChatRepository extends ServiceEntityRepository
         parent::__construct($registry, Chat::class);
     }
 
+    // Dans cette requête, la sous-requête compte le nombre total d'utilisateurs dans chaque chat.
+    // La clause HAVING vérifie ensuite si ce nombre est égal à 2, ce qui garantit que le chat retourné
+    // n'a que les deux utilisateurs spécifiés.
     public function findChatByUsers(User $user1, User $user2): ?Chat
     {
         return $this->createQueryBuilder('c')
             ->innerJoin('c.users', 'u')
             ->where('u.id IN (:ids)')
             ->groupBy('c.id')
-            ->having('COUNT(c.id) = 2')
+            ->having('COUNT(u.id) = 2')
+            ->andHaving('(SELECT COUNT(u2.id) FROM App\Entity\User u2 INNER JOIN u2.chats c2 WHERE c2.id = c.id) = 2')
             ->setParameter('ids', [$user1->getId(), $user2->getId()])
             ->getQuery()
             ->getOneOrNullResult();
