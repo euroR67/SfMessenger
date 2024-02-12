@@ -163,26 +163,26 @@ class ChatController extends AbstractController
     }
 
     // Kick un utilisateur du chat
-    #[Route('/chat/{id}/kick/{userId}', name: 'app_kick_user')]
-    public function kickUser(Chat $chat, $userId, EntityManagerInterface $entityManager, Security $security): Response
-    {
-        // Récupérer l'utilisateur à partir de son identifiant
-        $user = $entityManager->getRepository(User::class)->find($userId);
+    // #[Route('/chat/{id}/kick/{userId}', name: 'app_kick_user')]
+    // public function kickUser(Chat $chat, $userId, EntityManagerInterface $entityManager, Security $security): Response
+    // {
+    //     // Récupérer l'utilisateur à partir de son identifiant
+    //     $user = $entityManager->getRepository(User::class)->find($userId);
 
-        // Vérifier si l'utilisateur à kick est bien un membre du chat
-        if (!$chat->getUsers()->contains($user)) {
-            // Si l'utilisateur à kick n'est pas un membre du chat, renvoyer une erreur 403
-            return new Response('This user is not a member of this chat', 403);
-        }
+    //     // Vérifier si l'utilisateur à kick est bien un membre du chat
+    //     if (!$chat->getUsers()->contains($user)) {
+    //         // Si l'utilisateur à kick n'est pas un membre du chat, renvoyer une erreur 403
+    //         return new Response('This user is not a member of this chat', 403);
+    //     }
 
-        // Retirer l'utilisateur du chat
-        $chat->removeUser($user);
+    //     // Retirer l'utilisateur du chat
+    //     $chat->removeUser($user);
 
-        // Enregistrer les modifications dans la base de données
-        $entityManager->persist($chat);
-        $entityManager->flush();
+    //     // Enregistrer les modifications dans la base de données
+    //     $entityManager->persist($chat);
+    //     $entityManager->flush();
 
-        // Rediriger l'utilisateur vers la page des chats
-        return $this->redirectToRoute('app_chat_view', ['id' => $chat->getId()]);
-    }
+    //     // Rediriger l'utilisateur vers la page des chats
+    //     return $this->redirectToRoute('app_chat_view', ['id' => $chat->getId()]);
+    // }
 }

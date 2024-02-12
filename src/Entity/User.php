@@ -55,32 +55,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->username ?? $this->email;
     }
 
-    public function countUnreadMessages(): int
-    {
-        // Initialiser le compteur de messages non lus
-        $unreadCount = 0;
+    // public function countUnreadMessages(): int
+    // {
+    //     // Initialiser le compteur de messages non lus
+    //     $unreadCount = 0;
         
-        // Parcourir tous les chats auxquels l'utilisateur participe
-        foreach ($this->getChats() as $chat) {
-            // Créer un critère pour récupérer uniquement les messages non lus de ce chat
-            $criteria = Criteria::create()
-                ->andWhere(Criteria::expr()->eq('isRead', false));
+    //     // Parcourir tous les chats auxquels l'utilisateur participe
+    //     foreach ($this->getChats() as $chat) {
+    //         // Créer un critère pour récupérer uniquement les messages non lus de ce chat
+    //         $criteria = Criteria::create()
+    //             ->andWhere(Criteria::expr()->eq('isRead', false));
             
-            // Appliquer le critère pour obtenir la collection de messages non lus dans ce chat
-            $unreadMessages = $chat->getMessages()->matching($criteria);
+    //         // Appliquer le critère pour obtenir la collection de messages non lus dans ce chat
+    //         $unreadMessages = $chat->getMessages()->matching($criteria);
             
-            // Parcourir les messages non lus dans ce chat
-            foreach ($unreadMessages as $message) {
-                // Vérifier si le message n'est pas envoyé par l'utilisateur lui-même
-                if ($message->getUserMessage() !== $this) {
-                    // Si le message n'est pas envoyé par l'utilisateur lui-même, incrémenter le compteur global
-                    $unreadCount++;
-                }
-            }
-        }
+    //         // Parcourir les messages non lus dans ce chat
+    //         foreach ($unreadMessages as $message) {
+    //             // Vérifier si le message n'est pas envoyé par l'utilisateur lui-même
+    //             if ($message->getUserMessage() !== $this) {
+    //                 // Si le message n'est pas envoyé par l'utilisateur lui-même, incrémenter le compteur global
+    //                 $unreadCount++;
+    //             }
+    //         }
+    //     }
         
-        return $unreadCount;
-    }
+    //     return $unreadCount;
+    // }
 
     public function getId(): ?int
     {
